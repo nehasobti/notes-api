@@ -1,0 +1,29 @@
+name: AWS OIDC test
+
+# Manual "Run workflow" button in the Actions tab
+on:
+  workflow_dispatch:
+
+# Allow this workflow to request GitHub's ID token (needed for OIDC)
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  whoami:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to AWS with OIDC (no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::457872818871:role/github-notes-api-role
+          aws-region: eu-north-1
+
+      - name: Who am I in AWS?
+        run: aws sts get-caller-identity
+
+      - name: Allowed action (list buckets)
+        run: aws s3 ls
+
+      - name: NOT allowed action (should fail = least privilege works)
+        run: aws ec2 describe-instances || echo "Blocked as expected"
