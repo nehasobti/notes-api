@@ -26,7 +26,8 @@ jobs:
         run: ./mvnw -B verify   # -B = batch mode, cleaner logs
 
       - name: Check the Docker image builds
-        run: docker build -t notes-api:ci .
+        # Empty REGISTRY = pull base images from Docker Hub (not rate-limited on GitHub runners)
+        run: docker build --build-arg REGISTRY= -t notes-api:ci .
 
       - name: Save the jar
         uses: actions/upload-artifact@v4
