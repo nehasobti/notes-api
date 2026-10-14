@@ -1,0 +1,36 @@
+name: CI
+
+# WHEN to run: every push to main, and every pull request into main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest   # GitHub's free Linux machine
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven        # reuse downloaded libraries on the next run
+
+      - name: Build and run tests
+        run: ./mvnw -B verify   # -B = batch mode, cleaner logs
+
+      - name: Check the Docker image builds
+        run: docker build -t notes-api:ci .
+
+      - name: Save the jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: notes-api-jar
+          path: target/*.jar
+          retention-days: 3
